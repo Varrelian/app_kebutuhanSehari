@@ -33,7 +33,7 @@
     }
     
     .container {
-      max-width: 800px;
+      max-width: 1000px;
       margin: 0 auto;
       background: white;
       border-radius: 15px;
@@ -106,14 +106,14 @@
       margin-bottom: 20px;
     }
     
-    input, select, button {
+    input, select, button, textarea {
       padding: 12px 15px;
       border: 1px solid var(--light-gray);
       border-radius: 8px;
       font-size: 16px;
     }
     
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
@@ -142,6 +142,14 @@
     
     .btn-danger:hover {
       background: #d11466;
+    }
+    
+    .btn-warning {
+      background: var(--warning);
+    }
+    
+    .btn-warning:hover {
+      background: #e4850b;
     }
     
     .filters {
@@ -314,6 +322,123 @@
       font-size: 14px;
     }
     
+    /* Tabs styling */
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+    
+    .tab.active {
+      border-bottom: 3px solid var(--primary);
+      color: var(--primary);
+      font-weight: bold;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Budget alert styling */
+    .budget-alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .budget-alert.warning {
+      background: #fff3cd;
+      color: #856404;
+      border-left: 4px solid #ffc107;
+    }
+    
+    .budget-alert.danger {
+      background: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+    
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray);
+    }
+    
+    /* Goal progress styling */
+    .goal-progress {
+      margin-bottom: 20px;
+    }
+    
+    .progress-bar {
+      height: 20px;
+      background: var(--light-gray);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 10px;
+      transition: width 0.5s;
+    }
+    
+    .goal-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      font-size: 14px;
+      color: var(--gray);
+    }
+    
     @media (max-width: 600px) {
       .input-group {
         grid-template-columns: 1fr;
@@ -333,6 +458,10 @@
       
       .category-stats {
         grid-template-columns: 1fr;
+      }
+      
+      .tabs {
+        flex-wrap: wrap;
       }
     }
   </style>
@@ -360,64 +489,137 @@
     </div>
     
     <div class="main-content">
-      <h2 class="section-title"><i class="fas fa-plus-circle"></i> Tambah Pengeluaran Baru</h2>
-      
-      <div class="input-group">
-        <input type="text" id="nama-pengeluaran" placeholder="Untuk apa pengeluaran ini?">
-        <input type="number" id="jumlah-pengeluaran" placeholder="Jumlah (Rp)">
-        <select id="kategori-pengeluaran">
-          <option value="makanan">Makanan & Minuman</option>
-          <option value="transportasi">Transportasi</option>
-          <option value="belanja">Belanja</option>
-          <option value="hiburan">Hiburan</option>
-          <option value="utilitas">Utilitas</option>
-          <option value="kesehatan">Kesehatan</option>
-          <option value="lainnya">Lainnya</option>
-        </select>
+      <div class="tabs">
+        <div class="tab active" data-tab="pengeluaran">Pengeluaran</div>
+        <div class="tab" data-tab="anggaran">Anggaran</div>
+        <div class="tab" data-tab="target">Target Tabungan</div>
+        <div class="tab" data-tab="analisis">Analisis</div>
       </div>
       
-      <button class="btn" onclick="tambahPengeluaran()">
-        <i class="fas fa-plus"></i> Tambah Pengeluaran
-      </button>
-      
-      <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-list"></i> Daftar Pengeluaran</h2>
-      
-      <div class="filters">
-        <div class="filter-btn active" data-filter="semua">Semua</div>
-        <div class="filter-btn" data-filter="hari-ini">Hari Ini</div>
-        <div class="filter-btn" data-filter="minggu-ini">Minggu Ini</div>
-        <div class="filter-btn" data-filter="bulan-ini">Bulan Ini</div>
-        <select id="kategori-filter" style="margin-left: auto;">
-          <option value="semua">Semua Kategori</option>
-          <option value="makanan">Makanan & Minuman</option>
-          <option value="transportasi">Transportasi</option>
-          <option value="belanja">Belanja</option>
-          <option value="hiburan">Hiburan</option>
-          <option value="utilitas">Utilitas</option>
-          <option value="kesehatan">Kesehatan</option>
-          <option value="lainnya">Lainnya</option>
-        </select>
-      </div>
-      
-      <div class="expenses-list" id="daftar-pengeluaran">
-        <div class="empty-state">
-          <i class="fas fa-receipt"></i>
-          <p>Belum ada pengeluaran yang dicatat</p>
+      <!-- Tab Pengeluaran -->
+      <div class="tab-content active" id="pengeluaran-tab">
+        <h2 class="section-title"><i class="fas fa-plus-circle"></i> Tambah Pengeluaran Baru</h2>
+        
+        <div class="input-group">
+          <input type="text" id="nama-pengeluaran" placeholder="Untuk apa pengeluaran ini?">
+          <input type="number" id="jumlah-pengeluaran" placeholder="Jumlah (Rp)">
+          <select id="kategori-pengeluaran">
+            <option value="makanan">Makanan & Minuman</option>
+            <option value="transportasi">Transportasi</option>
+            <option value="belanja">Belanja</option>
+            <option value="hiburan">Hiburan</option>
+            <option value="utilitas">Utilitas</option>
+            <option value="kesehatan">Kesehatan</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+        </div>
+        
+        <textarea id="catatan-pengeluaran" placeholder="Tambahkan catatan (opsional)" rows="2"></textarea>
+        
+        <button class="btn" onclick="tambahPengeluaran()" style="margin-top: 10px;">
+          <i class="fas fa-plus"></i> Tambah Pengeluaran
+        </button>
+        
+        <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-list"></i> Daftar Pengeluaran</h2>
+        
+        <div class="filters">
+          <div class="filter-btn active" data-filter="semua">Semua</div>
+          <div class="filter-btn" data-filter="hari-ini">Hari Ini</div>
+          <div class="filter-btn" data-filter="minggu-ini">Minggu Ini</div>
+          <div class="filter-btn" data-filter="bulan-ini">Bulan Ini</div>
+          <select id="kategori-filter" style="margin-left: auto;">
+            <option value="semua">Semua Kategori</option>
+            <option value="makanan">Makanan & Minuman</option>
+            <option value="transportasi">Transportasi</option>
+            <option value="belanja">Belanja</option>
+            <option value="hiburan">Hiburan</option>
+            <option value="utilitas">Utilitas</option>
+            <option value="kesehatan">Kesehatan</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+        </div>
+        
+        <div class="expenses-list" id="daftar-pengeluaran">
+          <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <p>Belum ada pengeluaran yang dicatat</p>
+          </div>
         </div>
       </div>
       
-      <h2 class="section-title"><i class="fas fa-chart-pie"></i> Statistik Pengeluaran</h2>
-      
-      <div class="chart-container">
-        <div class="chart" id="chart">
-          <!-- Chart bars akan di-generate oleh JavaScript -->
+      <!-- Tab Anggaran -->
+      <div class="tab-content" id="anggaran-tab">
+        <h2 class="section-title"><i class="fas fa-wallet"></i> Kelola Anggaran Bulanan</h2>
+        
+        <div id="budget-alerts">
+          <!-- Alert akan ditampilkan di sini -->
+        </div>
+        
+        <div class="input-group">
+          <select id="kategori-anggaran">
+            <option value="makanan">Makanan & Minuman</option>
+            <option value="transportasi">Transportasi</option>
+            <option value="belanja">Belanja</option>
+            <option value="hiburan">Hiburan</option>
+            <option value="utilitas">Utilitas</option>
+            <option value="kesehatan">Kesehatan</option>
+            <option value="lainnya">Lainnya</option>
+          </select>
+          <input type="number" id="jumlah-anggaran" placeholder="Jumlah anggaran (Rp)">
+          <button class="btn" onclick="tambahAnggaran()">
+            <i class="fas fa-plus"></i> Set Anggaran
+          </button>
+        </div>
+        
+        <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-chart-pie"></i> Anggaran per Kategori</h2>
+        
+        <div id="daftar-anggaran">
+          <div class="empty-state">
+            <i class="fas fa-wallet"></i>
+            <p>Belum ada anggaran yang ditetapkan</p>
+          </div>
         </div>
       </div>
       
-      <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-chart-bar"></i> Pengeluaran per Kategori</h2>
+      <!-- Tab Target Tabungan -->
+      <div class="tab-content" id="target-tab">
+        <h2 class="section-title"><i class="fas fa-piggy-bank"></i> Target Menabung</h2>
+        
+        <div class="input-group">
+          <input type="text" id="nama-target" placeholder="Nama target menabung">
+          <input type="number" id="jumlah-target" placeholder="Jumlah target (Rp)">
+          <button class="btn" onclick="tambahTarget()">
+            <i class="fas fa-plus"></i> Tambah Target
+          </button>
+        </div>
+        
+        <div id="daftar-target">
+          <div class="empty-state">
+            <i class="fas fa-bullseye"></i>
+            <p>Belum ada target menabung</p>
+          </div>
+        </div>
+      </div>
       
-      <div class="category-stats" id="category-stats">
-        <!-- Statistik kategori akan di-generate oleh JavaScript -->
+      <!-- Tab Analisis -->
+      <div class="tab-content" id="analisis-tab">
+        <h2 class="section-title"><i class="fas fa-chart-line"></i> Analisis Pengeluaran</h2>
+        
+        <div class="chart-container">
+          <div class="chart" id="chart">
+            <!-- Chart bars akan di-generate oleh JavaScript -->
+          </div>
+        </div>
+        
+        <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-chart-bar"></i> Pengeluaran per Kategori</h2>
+        
+        <div class="category-stats" id="category-stats">
+          <!-- Statistik kategori akan di-generate oleh JavaScript -->
+        </div>
+        
+        <button class="btn" onclick="eksporData()" style="margin-top: 20px;">
+          <i class="fas fa-download"></i> Ekspor Data Pengeluaran
+        </button>
       </div>
     </div>
     
@@ -426,46 +628,348 @@
     </footer>
   </div>
 
+  <!-- Modal untuk detail pengeluaran -->
+  <div class="modal" id="detail-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Detail Pengeluaran</h2>
+        <button class="close-modal" onclick="tutupModal()">&times;</button>
+      </div>
+      <div id="modal-body">
+        <!-- Konten modal akan diisi oleh JavaScript -->
+      </div>
+    </div>
+  </div>
+
   <script>
     let pengeluaran = [];
+    let anggaran = [];
+    let targetTabungan = [];
     
     // Inisialisasi data contoh untuk demonstrasi
     function initContohData() {
       const contohData = [
-        { id: 1, nama: "Makan Siang", jumlah: 45000, kategori: "makanan", tanggal: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: 2, nama: "Bensin Motor", jumlah: 25000, kategori: "transportasi", tanggal: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: 3, nama: "Netflix", jumlah: 55000, kategori: "hiburan", tanggal: new Date().toISOString() },
-        { id: 4, nama: "Belanja Bulanan", jumlah: 350000, kategori: "belanja", tanggal: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-        { id: 5, nama: "Obat", jumlah: 75000, kategori: "kesehatan", tanggal: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() }
+        { id: 1, nama: "Makan Siang", jumlah: 45000, kategori: "makanan", tanggal: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), catatan: "Makan siang di kantin" },
+        { id: 2, nama: "Bensin Motor", jumlah: 25000, kategori: "transportasi", tanggal: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), catatan: "Isi bensin di SPBU" },
+        { id: 3, nama: "Netflix", jumlah: 55000, kategori: "hiburan", tanggal: new Date().toISOString(), catatan: "Langganan bulanan" },
+        { id: 4, nama: "Belanja Bulanan", jumlah: 350000, kategori: "belanja", tanggal: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), catatan: "Bahan makanan untuk seminggu" },
+        { id: 5, nama: "Obat", jumlah: 75000, kategori: "kesehatan", tanggal: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), catatan: "Obat flu dan vitamin" }
+      ];
+      
+      const contohAnggaran = [
+        { kategori: "makanan", jumlah: 1000000 },
+        { kategori: "transportasi", jumlah: 500000 },
+        { kategori: "hiburan", jumlah: 300000 }
+      ];
+      
+      const contohTarget = [
+        { id: 1, nama: "Liburan Akhir Tahun", target: 5000000, terkumpul: 1250000 }
       ];
       
       // Hanya tambah data contoh jika belum ada data di localStorage
       if (!localStorage.getItem('pengeluaran')) {
         pengeluaran = contohData;
-        simpanData();
+        simpanData('pengeluaran', pengeluaran);
+      }
+      
+      if (!localStorage.getItem('anggaran')) {
+        anggaran = contohAnggaran;
+        simpanData('anggaran', anggaran);
+      }
+      
+      if (!localStorage.getItem('targetTabungan')) {
+        targetTabungan = contohTarget;
+        simpanData('targetTabungan', targetTabungan);
       }
     }
     
-    // Cek apakah ada data di localStorage
-    if (localStorage.getItem('pengeluaran')) {
-      pengeluaran = JSON.parse(localStorage.getItem('pengeluaran'));
-    } else {
-      initContohData();
+    // Muat data dari localStorage
+    function muatData() {
+      if (localStorage.getItem('pengeluaran')) {
+        pengeluaran = JSON.parse(localStorage.getItem('pengeluaran'));
+      }
+      
+      if (localStorage.getItem('anggaran')) {
+        anggaran = JSON.parse(localStorage.getItem('anggaran'));
+      }
+      
+      if (localStorage.getItem('targetTabungan')) {
+        targetTabungan = JSON.parse(localStorage.getItem('targetTabungan'));
+      }
     }
     
+    // Inisialisasi
+    muatData();
+    initContohData();
     hitungTotalPengeluaran();
     tampilkanPengeluaran();
     updateChart();
     updateCategoryStats();
+    tampilkanAnggaran();
+    tampilkanTarget();
+    updateBudgetAlerts();
     
+    // Fungsi untuk tiga fitur baru
+    
+    // 1. FITUR ANGGARAN BULANAN
+    function tambahAnggaran() {
+      const kategoriInput = document.getElementById('kategori-anggaran');
+      const jumlahInput = document.getElementById('jumlah-anggaran');
+      
+      const kategori = kategoriInput.value;
+      const jumlah = parseInt(jumlahInput.value);
+      
+      if (jumlah && jumlah > 0) {
+        // Cek apakah anggaran untuk kategori ini sudah ada
+        const index = anggaran.findIndex(item => item.kategori === kategori);
+        
+        if (index !== -1) {
+          // Update anggaran yang sudah ada
+          anggaran[index].jumlah = jumlah;
+        } else {
+          // Tambah anggaran baru
+          anggaran.push({ kategori, jumlah });
+        }
+        
+        simpanData('anggaran', anggaran);
+        tampilkanAnggaran();
+        updateBudgetAlerts();
+        
+        // Reset form
+        jumlahInput.value = '';
+      } else {
+        alert('Harap isi jumlah anggaran dengan benar!');
+      }
+    }
+    
+    function tampilkanAnggaran() {
+      const daftarElement = document.getElementById('daftar-anggaran');
+      
+      if (anggaran.length === 0) {
+        daftarElement.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-wallet"></i>
+            <p>Belum ada anggaran yang ditetapkan</p>
+          </div>
+        `;
+        return;
+      }
+      
+      daftarElement.innerHTML = '';
+      
+      anggaran.forEach(item => {
+        // Hitung total pengeluaran untuk kategori ini
+        const totalPengeluaran = pengeluaran
+          .filter(p => p.kategori === item.kategori)
+          .reduce((total, p) => total + p.jumlah, 0);
+        
+        const persentase = Math.min(100, Math.round((totalPengeluaran / item.jumlah) * 100));
+        
+        const anggaranElement = document.createElement('div');
+        anggaranElement.className = 'category-stat';
+        anggaranElement.innerHTML = `
+          <div class="category-name">
+            <i class="fas fa-${getIconKategori(item.kategori)}"></i>
+            ${getNamaKategori(item.kategori)}
+          </div>
+          <div class="category-amount">${formatRupiah(totalPengeluaran)} / ${formatRupiah(item.jumlah)}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${persentase}%; background: ${persentase > 90 ? 'var(--danger)' : persentase > 75 ? 'var(--warning)' : 'var(--primary)'}"></div>
+          </div>
+          <div class="category-percentage">${persentase}% digunakan</div>
+          <button class="action-btn" onclick="hapusAnggaran('${item.kategori}')" style="margin-top: 10px;">
+            <i class="fas fa-trash"></i> Hapus Anggaran
+          </button>
+        `;
+        daftarElement.appendChild(anggaranElement);
+      });
+    }
+    
+    function hapusAnggaran(kategori) {
+      if (confirm('Apakah Anda yakin ingin menghapus anggaran untuk kategori ini?')) {
+        anggaran = anggaran.filter(item => item.kategori !== kategori);
+        simpanData('anggaran', anggaran);
+        tampilkanAnggaran();
+        updateBudgetAlerts();
+      }
+    }
+    
+    function updateBudgetAlerts() {
+      const alertsElement = document.getElementById('budget-alerts');
+      alertsElement.innerHTML = '';
+      
+      anggaran.forEach(item => {
+        // Hitung total pengeluaran untuk kategori ini
+        const totalPengeluaran = pengeluaran
+          .filter(p => p.kategori === item.kategori)
+          .reduce((total, p) => total + p.jumlah, 0);
+        
+        const persentase = Math.round((totalPengeluaran / item.jumlah) * 100);
+        
+        if (persentase >= 90) {
+          const alertElement = document.createElement('div');
+          alertElement.className = 'budget-alert danger';
+          alertElement.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+              <strong>Peringatan!</strong> Pengeluaran ${getNamaKategori(item.kategori)} telah mencapai ${persentase}% dari anggaran.
+            </div>
+          `;
+          alertsElement.appendChild(alertElement);
+        } else if (persentase >= 75) {
+          const alertElement = document.createElement('div');
+          alertElement.className = 'budget-alert warning';
+          alertElement.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            <div>
+              <strong>Perhatian!</strong> Pengeluaran ${getNamaKategori(item.kategori)} telah mencapai ${persentase}% dari anggaran.
+            </div>
+          `;
+          alertsElement.appendChild(alertElement);
+        }
+      });
+    }
+    
+    // 2. FITUR TARGET TABUNGAN
+    function tambahTarget() {
+      const namaInput = document.getElementById('nama-target');
+      const jumlahInput = document.getElementById('jumlah-target');
+      
+      const nama = namaInput.value.trim();
+      const target = parseInt(jumlahInput.value);
+      
+      if (nama && target && target > 0) {
+        const id = Date.now();
+        
+        targetTabungan.push({
+          id,
+          nama,
+          target,
+          terkumpul: 0
+        });
+        
+        simpanData('targetTabungan', targetTabungan);
+        tampilkanTarget();
+        
+        // Reset form
+        namaInput.value = '';
+        jumlahInput.value = '';
+      } else {
+        alert('Harap isi nama dan jumlah target dengan benar!');
+      }
+    }
+    
+    function tampilkanTarget() {
+      const daftarElement = document.getElementById('daftar-target');
+      
+      if (targetTabungan.length === 0) {
+        daftarElement.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-bullseye"></i>
+            <p>Belum ada target menabung</p>
+          </div>
+        `;
+        return;
+      }
+      
+      daftarElement.innerHTML = '';
+      
+      targetTabungan.forEach(item => {
+        const persentase = Math.min(100, Math.round((item.terkumpul / item.target) * 100));
+        
+        const targetElement = document.createElement('div');
+        targetElement.className = 'category-stat';
+        targetElement.innerHTML = `
+          <div class="category-name">
+            <i class="fas fa-piggy-bank"></i>
+            ${item.nama}
+          </div>
+          <div class="category-amount">${formatRupiah(item.terkumpul)} / ${formatRupiah(item.target)}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${persentase}%"></div>
+          </div>
+          <div class="goal-details">
+            <span>${persentase}% tercapai</span>
+            <span>${formatRupiah(item.target - item.terkumpul)} lagi</span>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="btn" onclick="tambahTabungan(${item.id}, 100000)">
+              + Rp 100rb
+            </button>
+            <button class="btn btn-danger" onclick="hapusTarget(${item.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        daftarElement.appendChild(targetElement);
+      });
+    }
+    
+    function tambahTabungan(id, jumlah) {
+      const index = targetTabungan.findIndex(item => item.id === id);
+      
+      if (index !== -1) {
+        targetTabungan[index].terkumpul += jumlah;
+        
+        // Jika melebihi target, set ke target
+        if (targetTabungan[index].terkumpul > targetTabungan[index].target) {
+          targetTabungan[index].terkumpul = targetTabungan[index].target;
+        }
+        
+        simpanData('targetTabungan', targetTabungan);
+        tampilkanTarget();
+      }
+    }
+    
+    function hapusTarget(id) {
+      if (confirm('Apakah Anda yakin ingin menghapus target menabung ini?')) {
+        targetTabungan = targetTabungan.filter(item => item.id !== id);
+        simpanData('targetTabungan', targetTabungan);
+        tampilkanTarget();
+      }
+    }
+    
+    // 3. FITUR EKSPOR DATA
+    function eksporData() {
+      // Format data untuk CSV
+      let csvContent = "Data Pengeluaran\n\n";
+      csvContent += "Tanggal,Nama,Kategori,Jumlah,Catatan\n";
+      
+      pengeluaran.forEach(item => {
+        const tanggal = new Date(item.tanggal).toLocaleDateString('id-ID');
+        const nama = item.name;
+        const kategori = getNamaKategori(item.kategori);
+        const jumlah = item.jumlah;
+        const catatan = item.catatan || '';
+        
+        csvContent += `"${tanggal}","${nama}","${kategori}","${jumlah}","${catatan}"\n`;
+      });
+      
+      // Buat blob dan download link
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'laporan-pengeluaran.csv');
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Fungsi-fungsi yang sudah ada sebelumnya
     function tambahPengeluaran() {
       const namaInput = document.getElementById('nama-pengeluaran');
       const jumlahInput = document.getElementById('jumlah-pengeluaran');
       const kategoriInput = document.getElementById('kategori-pengeluaran');
+      const catatanInput = document.getElementById('catatan-pengeluaran');
       
       const nama = namaInput.value.trim();
       const jumlah = parseInt(jumlahInput.value);
       const kategori = kategoriInput.value;
+      const catatan = catatanInput.value.trim();
       
       if (nama && jumlah && jumlah > 0) {
         const tanggal = new Date().toISOString();
@@ -475,19 +979,22 @@
           nama,
           jumlah,
           kategori,
-          tanggal
+          tanggal,
+          catatan
         };
         
         pengeluaran.push(pengeluaranBaru);
-        simpanData();
+        simpanData('pengeluaran', pengeluaran);
         hitungTotalPengeluaran();
         tampilkanPengeluaran();
         updateChart();
         updateCategoryStats();
+        updateBudgetAlerts();
         
         // Reset form
         namaInput.value = '';
         jumlahInput.value = '';
+        catatanInput.value = '';
         namaInput.focus();
       } else {
         alert('Harap isi nama dan jumlah pengeluaran dengan benar!');
@@ -497,16 +1004,17 @@
     function hapusPengeluaran(id) {
       if (confirm('Apakah Anda yakin ingin menghapus pengeluaran ini?')) {
         pengeluaran = pengeluaran.filter(item => item.id !== id);
-        simpanData();
+        simpanData('pengeluaran', pengeluaran);
         hitungTotalPengeluaran();
         tampilkanPengeluaran();
         updateChart();
         updateCategoryStats();
+        updateBudgetAlerts();
       }
     }
     
-    function simpanData() {
-      localStorage.setItem('pengeluaran', JSON.stringify(pengeluaran));
+    function simpanData(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
     }
     
     function hitungTotalPengeluaran() {
@@ -629,13 +1137,38 @@
           <div class="expense-details">
             <div class="expense-amount">${formatRupiah(item.jumlah)}</div>
             <div class="expense-date">${formatTanggal(item.tanggal)}</div>
-            <button class="action-btn" onclick="hapusPengeluaran(${item.id})">
-              <i class="fas fa-trash"></i>
-            </button>
+            <div>
+              <button class="action-btn" onclick="lihatDetail(${item.id})" title="Lihat detail">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="action-btn" onclick="hapusPengeluaran(${item.id})" title="Hapus">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           </div>
         `;
         daftarElement.appendChild(itemElement);
       });
+    }
+    
+    function lihatDetail(id) {
+      const item = pengeluaran.find(p => p.id === id);
+      if (item) {
+        const modalBody = document.getElementById('modal-body');
+        modalBody.innerHTML = `
+          <p><strong>Nama:</strong> ${item.nama}</p>
+          <p><strong>Jumlah:</strong> ${formatRupiah(item.jumlah)}</p>
+          <p><strong>Kategori:</strong> ${getNamaKategori(item.kategori)}</p>
+          <p><strong>Tanggal:</strong> ${formatTanggal(item.tanggal)}</p>
+          <p><strong>Catatan:</strong> ${item.catatan || 'Tidak ada catatan'}</p>
+        `;
+        
+        document.getElementById('detail-modal').style.display = 'flex';
+      }
+    }
+    
+    function tutupModal() {
+      document.getElementById('detail-modal').style.display = 'none';
     }
     
     function updateChart() {
@@ -710,6 +1243,23 @@
       }
     }
     
+    // Event listener untuk tab
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        // Aktifkan tab yang diklik
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Tampilkan konten tab yang sesuai
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+    
     // Event listener untuk filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -720,6 +1270,14 @@
     });
     
     document.getElementById('kategori-filter').addEventListener('change', tampilkanPengeluaran);
+    
+    // Tutup modal jika klik di luar konten modal
+    window.addEventListener('click', (event) => {
+      const modal = document.getElementById('detail-modal');
+      if (event.target === modal) {
+        tutupModal();
+      }
+    });
     
     // Fokus ke input pertama saat halaman dimuat
     document.getElementById('nama-pengeluaran').focus();
