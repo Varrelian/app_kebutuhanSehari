@@ -532,4 +532,88 @@
           item => new Date(item.tanggal) >= mingguLalu
         );
       } else if (filter === 'bulan-ini') {
-        const awalBulan = new Date(sekarang.getFullYear
+        const awalBulan = new Date(sekarang.getFullYear(), sekarang.getMonth(), 1);
+        pengeluaranTertampil = pengeluaranTertampil.filter(
+          item => new Date(item.tanggal) >= awalBulan
+        );
+      }
+      
+      // Filter berdasarkan kategori
+      if (kategoriFilter !== 'semua') {
+        pengeluaranTertampil = pengeluaranTertampil.filter(
+          item => item.kategori === kategoriFilter
+        );
+      }
+      
+      // Urutkan dari yang terbaru
+      pengeluaranTertampil.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+      
+      if (pengeluaranTertampil.length === 0) {
+        daftarElement.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <p>Tidak ada pengeluaran yang sesuai dengan filter</p>
+          </div>
+        `;
+        return;
+      }
+      
+      daftarElement.innerHTML = '';
+      pengeluaranTertampil.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'expense-item';
+        itemElement.innerHTML = `
+          <div class="expense-info">
+            <div class="expense-name">${item.nama}</div>
+            <div class="expense-category">${getNamaKategori(item.kategori)}</div>
+          </div>
+          <div class="expense-details">
+            <div class="expense-amount">${formatRupiah(item.jumlah)}</div>
+            <div class="expense-date">${formatTanggal(item.tanggal)}</div>
+            <button class="action-btn" onclick="hapusPengeluaran(${item.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        daftarElement.appendChild(itemElement);
+      });
+    }
+    
+    function updateChart() {
+      // Implementasi chart yang lebih canggih akan membutuhkan library seperti Chart.js
+      // Di sini kita hanya membuat contoh sederhana
+      const chartElement = document.getElementById('chart');
+      chartElement.innerHTML = '';
+      
+      // Data contoh untuk chart
+      const data = [40, 60, 30, 80, 50, 70, 20];
+      const labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+      
+      const maxValue = Math.max(...data);
+      
+      data.forEach((value, index) => {
+        const height = (value / maxValue) * 100;
+        const bar = document.createElement('div');
+        bar.className = 'chart-bar';
+        bar.style.height = `${height}%`;
+        bar.innerHTML = `<div class="chart-label">${labels[index]}</div>`;
+        chartElement.appendChild(bar);
+      });
+    }
+    
+    // Event listener untuk filter
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tampilkanPengeluaran();
+      });
+    });
+    
+    document.getElementById('kategori-filter').addEventListener('change', tampilkanPengeluaran);
+    
+    // Fokus ke input pertama saat halaman dimuat
+    document.getElementById('nama-pengeluaran').focus();
+  </script>
+</body>
+</html>
