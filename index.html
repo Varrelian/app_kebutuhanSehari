@@ -261,6 +261,39 @@
       color: var(--gray);
     }
     
+    .category-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .category-stat {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .category-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .category-amount {
+      font-size: 18px;
+      color: var(--primary);
+    }
+    
+    .category-percentage {
+      font-size: 12px;
+      color: var(--gray);
+      margin-top: 5px;
+    }
+    
     .empty-state {
       text-align: center;
       padding: 30px;
@@ -297,6 +330,10 @@
         width: 100%;
         margin-top: 10px;
       }
+      
+      .category-stats {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -326,8 +363,8 @@
       <h2 class="section-title"><i class="fas fa-plus-circle"></i> Tambah Pengeluaran Baru</h2>
       
       <div class="input-group">
-        <input type="text" id="nama-pengeluaran" placeholder="boros apa hari ini?">
-        <input type="number" id="jumlah-pengeluaran" placeholder="Jumlah pemborosan">
+        <input type="text" id="nama-pengeluaran" placeholder="Untuk apa pengeluaran ini?">
+        <input type="number" id="jumlah-pengeluaran" placeholder="Jumlah (Rp)">
         <select id="kategori-pengeluaran">
           <option value="makanan">Makanan & Minuman</option>
           <option value="transportasi">Transportasi</option>
@@ -373,28 +410,14 @@
       
       <div class="chart-container">
         <div class="chart" id="chart">
-          <div class="chart-bar" style="height: 40%;">
-            <div class="chart-label">Sen</div>
-          </div>
-          <div class="chart-bar" style="height: 60%;">
-            <div class="chart-label">Sel</div>
-          </div>
-          <div class="chart-bar" style="height: 30%;">
-            <div class="chart-label">Rab</div>
-          </div>
-          <div class="chart-bar" style="height: 80%;">
-            <div class="chart-label">Kam</div>
-          </div>
-          <div class="chart-bar" style="height: 50%;">
-            <div class="chart-label">Jum</div>
-          </div>
-          <div class="chart-bar" style="height: 70%;">
-            <div class="chart-label">Sab</div>
-          </div>
-          <div class="chart-bar" style="height: 20%;">
-            <div class="chart-label">Min</div>
-          </div>
+          <!-- Chart bars akan di-generate oleh JavaScript -->
         </div>
+      </div>
+      
+      <h2 class="section-title" style="margin-top: 30px;"><i class="fas fa-chart-bar"></i> Pengeluaran per Kategori</h2>
+      
+      <div class="category-stats" id="category-stats">
+        <!-- Statistik kategori akan di-generate oleh JavaScript -->
       </div>
     </div>
     
@@ -405,15 +428,35 @@
 
   <script>
     let pengeluaran = [];
-    let totalPengeluaran = 0;
+    
+    // Inisialisasi data contoh untuk demonstrasi
+    function initContohData() {
+      const contohData = [
+        { id: 1, nama: "Makan Siang", jumlah: 45000, kategori: "makanan", tanggal: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 2, nama: "Bensin Motor", jumlah: 25000, kategori: "transportasi", tanggal: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 3, nama: "Netflix", jumlah: 55000, kategori: "hiburan", tanggal: new Date().toISOString() },
+        { id: 4, nama: "Belanja Bulanan", jumlah: 350000, kategori: "belanja", tanggal: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
+        { id: 5, nama: "Obat", jumlah: 75000, kategori: "kesehatan", tanggal: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() }
+      ];
+      
+      // Hanya tambah data contoh jika belum ada data di localStorage
+      if (!localStorage.getItem('pengeluaran')) {
+        pengeluaran = contohData;
+        simpanData();
+      }
+    }
     
     // Cek apakah ada data di localStorage
     if (localStorage.getItem('pengeluaran')) {
       pengeluaran = JSON.parse(localStorage.getItem('pengeluaran'));
-      hitungTotalPengeluaran();
-      tampilkanPengeluaran();
-      updateChart();
+    } else {
+      initContohData();
     }
+    
+    hitungTotalPengeluaran();
+    tampilkanPengeluaran();
+    updateChart();
+    updateCategoryStats();
     
     function tambahPengeluaran() {
       const namaInput = document.getElementById('nama-pengeluaran');
@@ -440,6 +483,7 @@
         hitungTotalPengeluaran();
         tampilkanPengeluaran();
         updateChart();
+        updateCategoryStats();
         
         // Reset form
         namaInput.value = '';
@@ -457,6 +501,7 @@
         hitungTotalPengeluaran();
         tampilkanPengeluaran();
         updateChart();
+        updateCategoryStats();
       }
     }
     
@@ -465,7 +510,7 @@
     }
     
     function hitungTotalPengeluaran() {
-      totalPengeluaran = pengeluaran.reduce((total, item) => total + item.jumlah, 0);
+      const total = pengeluaran.reduce((total, item) => total + item.jumlah, 0);
       
       // Hitung pengeluaran hari ini
       const hariIni = new Date().toDateString();
@@ -475,9 +520,9 @@
       
       // Hitung rata-rata per hari
       const hariDenganPengeluaran = new Set(pengeluaran.map(item => new Date(item.tanggal).toDateString())).size;
-      const rataRata = hariDenganPengeluaran > 0 ? Math.round(totalPengeluaran / hariDenganPengeluaran) : 0;
+      const rataRata = hariDenganPengeluaran > 0 ? Math.round(total / hariDenganPengeluaran) : 0;
       
-      document.getElementById('total-pengeluaran').textContent = formatRupiah(totalPengeluaran);
+      document.getElementById('total-pengeluaran').textContent = formatRupiah(total);
       document.getElementById('pengeluaran-hari-ini').textContent = formatRupiah(pengeluaranHariIni);
       document.getElementById('rata-rata').textContent = formatRupiah(rataRata);
     }
@@ -509,6 +554,20 @@
       };
       
       return kategoriMap[kategori] || 'Lainnya';
+    }
+    
+    function getIconKategori(kategori) {
+      const iconMap = {
+        'makanan': 'utensils',
+        'transportasi': 'car',
+        'belanja': 'shopping-bag',
+        'hiburan': 'film',
+        'utilitas': 'bolt',
+        'kesehatan': 'heartbeat',
+        'lainnya': 'receipt'
+      };
+      
+      return iconMap[kategori] || 'receipt';
     }
     
     function tampilkanPengeluaran() {
@@ -580,25 +639,75 @@
     }
     
     function updateChart() {
-      // Implementasi chart yang lebih canggih akan membutuhkan library seperti Chart.js
-      // Di sini kita hanya membuat contoh sederhana
       const chartElement = document.getElementById('chart');
       chartElement.innerHTML = '';
       
-      // Data contoh untuk chart
-      const data = [40, 60, 30, 80, 50, 70, 20];
-      const labels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+      // Hitung pengeluaran per hari dalam minggu ini
+      const hariDalamMinggu = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const sekarang = new Date();
+      const startOfWeek = new Date(sekarang);
+      startOfWeek.setDate(sekarang.getDate() - sekarang.getDay()); // Mulai dari Minggu
       
-      const maxValue = Math.max(...data);
+      const dataHarian = Array(7).fill(0);
       
-      data.forEach((value, index) => {
-        const height = (value / maxValue) * 100;
+      pengeluaran.forEach(item => {
+        const tanggal = new Date(item.tanggal);
+        // Cek apakah tanggal dalam minggu ini
+        if (tanggal >= startOfWeek) {
+          const hari = tanggal.getDay(); // 0 (Minggu) sampai 6 (Sabtu)
+          dataHarian[hari] += item.jumlah;
+        }
+      });
+      
+      const maxValue = Math.max(...dataHarian);
+      
+      hariDalamMinggu.forEach((hari, index) => {
+        const height = maxValue > 0 ? (dataHarian[index] / maxValue) * 100 : 0;
         const bar = document.createElement('div');
         bar.className = 'chart-bar';
         bar.style.height = `${height}%`;
-        bar.innerHTML = `<div class="chart-label">${labels[index]}</div>`;
+        bar.innerHTML = `
+          <div class="chart-label">${hari}</div>
+          <div style="position: absolute; top: -25px; left: 0; right: 0; text-align: center; font-size: 12px;">
+            ${formatRupiah(dataHarian[index])}
+          </div>
+        `;
         chartElement.appendChild(bar);
       });
+    }
+    
+    function updateCategoryStats() {
+      const categoryStatsElement = document.getElementById('category-stats');
+      categoryStatsElement.innerHTML = '';
+      
+      // Hitung total pengeluaran
+      const total = pengeluaran.reduce((sum, item) => sum + item.jumlah, 0);
+      
+      // Hitung pengeluaran per kategori
+      const pengeluaranPerKategori = {};
+      pengeluaran.forEach(item => {
+        if (!pengeluaranPerKategori[item.kategori]) {
+          pengeluaranPerKategori[item.kategori] = 0;
+        }
+        pengeluaranPerKategori[item.kategori] += item.jumlah;
+      });
+      
+      // Tampilkan statistik per kategori
+      for (const [kategori, jumlah] of Object.entries(pengeluaranPerKategori)) {
+        const persentase = total > 0 ? ((jumlah / total) * 100).toFixed(1) : 0;
+        
+        const statElement = document.createElement('div');
+        statElement.className = 'category-stat';
+        statElement.innerHTML = `
+          <div class="category-name">
+            <i class="fas fa-${getIconKategori(kategori)}"></i>
+            ${getNamaKategori(kategori)}
+          </div>
+          <div class="category-amount">${formatRupiah(jumlah)}</div>
+          <div class="category-percentage">${persentase}% dari total pengeluaran</div>
+        `;
+        categoryStatsElement.appendChild(statElement);
+      }
     }
     
     // Event listener untuk filter
@@ -617,4 +726,3 @@
   </script>
 </body>
 </html>
-
